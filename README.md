@@ -1,8 +1,10 @@
 # TrendRider — btc-race-24h-20261123-0511
 
-A BTC trend-following bot for the make.fun bounty "Race a BTC trading bot
-live for 24 hours". Long-only cbBTC/USDC on 1-minute bars, $1,000 paper
-capital. Built with Muse only (Codex accounts dead, Xingchi 503).
+[![make.fun · btc-race-24h-20261123-0511](https://make.fun/badge/btc-race-24h-20261123-0511.svg)](https://make.fun/bounty/btc-race-24h-20261123-0511?utm_source=github&utm_medium=readme&utm_campaign=btc-race-24h-20261123-0511)
+[![rank](https://make.fun/badge/btc-race-24h-20261123-0511/Ajot00/btc-race-24h-20261123-0511-bot/rank.svg)](https://make.fun/bounty/btc-race-24h-20261123-0511/leaderboard?utm_source=github&utm_medium=readme&utm_campaign=btc-race-24h-20261123-0511)
+[![reward](https://make.fun/badge/btc-race-24h-20261123-0511/Ajot00/btc-race-24h-20261123-0511-bot/reward.svg)](https://make.fun/bounty/btc-race-24h-20261123-0511?utm_source=github&utm_medium=readme&utm_campaign=btc-race-24h-20261123-0511)
+
+A BTC trend-following bot for the make.fun bounty [“Race a BTC trading bot live for 24 hours”](https://make.fun/bounty/btc-race-24h-20261123-0511). Long-only cbBTC/USDC on 1-minute bars, $1,000 paper capital. Built with Muse only (Codex accounts dead, Xingchi 503).
 
 ## Strategy
 
