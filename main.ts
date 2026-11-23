@@ -46,6 +46,14 @@ const TRAIL_BPS = 250n;
 const STOP_BPS = 300n;
 /** Entry needs a trailing 24-bar return of at least this many bps. */
 const MIN_RETURN_BPS = 50n;
+/** Length of the trailing-return confirmation window, in bars. */
+const RETURN_WINDOW_BARS = 24;
+/** Denominator for basis-point math (10000 bps = 100%). */
+const BPS_DENOMINATOR = 10000n;
+/** Denominator for percent math (100% = whole). */
+const PCT_DENOMINATOR = 100n;
+/** Smallest cash balance (quote micro-units, i.e. $1) that may open a buy. */
+const MIN_CASH_QUOTE_UNITS = 1000000n;
 /** A cross-up stays actionable for this many bars after it happens. */
 const CROSS_MEMORY_BARS = 48;
 /** Most positions the bot opens in one window. */
@@ -155,8 +163,8 @@ await runBars({
     if (holding && pos !== undefined) {
       const mark = state.value(symbol, pos.qty);
       if (mark > peak) peak = mark;
-      const trailing = mark * 10000n <= peak * (10000n - TRAIL_BPS);
-      const stopped = mark * 10000n <= pos.cost * (10000n - STOP_BPS);
+      const trailing = mark * BPS_DENOMINATOR <= peak * (BPS_DENOMINATOR - TRAIL_BPS);
+      const stopped = mark * BPS_DENOMINATOR <= pos.cost * (BPS_DENOMINATOR - STOP_BPS);
       if (trailing || stopped) {
         lastExitPrice = close;
         peak = 0n;
@@ -166,12 +174,12 @@ await runBars({
     }
 
     // Flat: no new buys late in the window, and never below $1 of cash.
-    if (i >= NO_BUY_AFTER || state.cash < 1000000n) return [];
+    if (i >= NO_BUY_AFTER || state.cash < MIN_CASH_QUOTE_UNITS) return [];
 
     // Probe fallback: no trade yet by bar 1300 -> buy a 10% slice, so the
     // >=1-trade guardrail is met even in a window with no trend signal.
     if (entries === 0 && i >= PROBE_BAR) {
-      const slice = (state.cash * PROBE_PCT) / 100n;
+      const slice = (state.cash * PROBE_PCT) / PCT_DENOMINATOR;
       if (slice < BigInt(state.hello.fees.min_notional_quote_units)) return [];
       return [{ side: 'buy', symbol, notional_quote_units: slice, max_slippage_bps: MAX_SLIPPAGE_BPS }];
     }
@@ -180,13 +188,13 @@ await runBars({
     if (diff === null || diff <= 0 || i - lastCross > CROSS_MEMORY_BARS) return [];
 
     // Trend confirmation: the trailing 24-bar return must be >= +50 bps.
-    if (i < 24) return [];
-    const retBps = ((close - closes[i - 24]) * 10000n) / closes[i - 24];
+    if (i < RETURN_WINDOW_BARS) return [];
+    const retBps = ((close - closes[i - RETURN_WINDOW_BARS]) * BPS_DENOMINATOR) / closes[i - RETURN_WINDOW_BARS];
     if (retBps < MIN_RETURN_BPS) return [];
 
     // Re-entry only above the last exit price (+0.5%): never chase a
     // falling market back in at or below where the stop just took us out.
-    if (entries > 0 && lastExitPrice > 0n && close * 10000n <= lastExitPrice * (10000n + REENTRY_GAP_BPS)) return [];
+    if (entries > 0 && lastExitPrice > 0n && close * BPS_DENOMINATOR <= lastExitPrice * (BPS_DENOMINATOR + REENTRY_GAP_BPS)) return [];
 
     return [{ side: 'buy', symbol, notional_quote_units: state.cash, max_slippage_bps: MAX_SLIPPAGE_BPS }];
   },
